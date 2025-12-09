@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASTANA GUIDE | Курсовая Работа</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+
+    <style>
+        /* --- СТИЛИ (Тема: Астана) --- */
+        :root {
+            --primary-color: #0097a7; 
+            --primary-dark: #006064;  
+            --accent-color: #ffca28;  
+            --text-color: #37474f;    
+            --bg-color: #e0f2f1;      
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, .logo { font-family: 'Montserrat', sans-serif; }
+
+        /* --- Навигация --- */
+        header {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+            color: white;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent-color);
+            text-transform: uppercase;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 25px;
+            padding: 0;
+            margin: 0;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover { color: var(--accent-color); }
+
+        /* --- Hero (Главная) --- */
+        #home {
+            background: linear-gradient(rgba(0, 60, 80, 0.6), rgba(0, 60, 80, 0.6)), url('https://vestnik19.kz/wp-content/uploads/2025/07/20160804_astana120m_maxbugayev_04_1200.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: white;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        #home h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.8);
+        }
+
+        #home span { color: var(--accent-color); }
+
+        #home p {
+            font-size: 1.2rem;
+            max-width: 900px;
+            background: rgba(0,0,0,0.5);
+            padding: 25px;
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+            margin-bottom: 30px;
+            line-height: 1.8;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .btn-start {
+            padding: 15px 40px;
+            background-color: var(--accent-color);
+            color: var(--primary-dark);
+            font-weight: 800;
+            text-decoration: none;
+            border-radius: 50px;
+            box-shadow: 0 5px 15px rgba(255, 202, 40, 0.4);
+            transition: transform 0.3s;
+        }
+
+        .btn-start:hover { transform: translateY(-3px); }
+
+        /* --- Секции --- */
+        section {
+            padding: 80px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h2.section-title {
+            color: var(--primary-dark);
+            text-align: center;
+            margin-bottom: 50px;
+            font-size: 2.2rem;
+            position: relative;
+        }
+
+        h2.section-title::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: var(--accent-color);
+            margin: 15px auto 0;
+        }
+
+        /* --- Блок "О Нас" --- */
+        .about-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .about-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            border-top: 5px solid var(--primary-color);
+            text-align: left;
+        }
+
+        .about-card h3 {
+            color: var(--primary-dark);
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* --- Сетка Локаций (9 шт) --- */
+        .parks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .park-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .park-card:hover { transform: translateY(-5px); }
+
+        .park-card img {
+            width: 100%;
+            height: 200px; 
+            object-fit: cover;
+        }
+
+        .park-info {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .park-info h3 { margin: 0 0 10px 0; color: var(--primary-dark); font-size: 1.2rem; }
+        .park-info p { font-size: 0.9rem; color: #555; flex-grow: 1; margin-bottom: 20px; }
+
+        .btn-route {
+            padding: 10px;
+            background-color: var(--primary-dark);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-route:hover { background-color: var(--primary-color); }
+
+        /* --- Карта --- */
+        #map-section { background: white; width: 100%; max-width: 100%; }
+        .map-wrapper-width { max-width: 1200px; margin: 0 auto; }
+
+        #map-container {
+            height: 600px;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid #ddd;
+            position: relative;
+        }
+        #map { height: 100%; width: 100%; }
+        
+        /* Скрываем стандартный блок навигации Leaflet Routing Machine на карте */
+        .leaflet-routing-container {
+            display: none !important; 
+        }
+
+        .map-controls {
+            background: #fcfcfc;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            border-left: 5px solid var(--accent-color);
+        }
+
+        select {
+            padding: 10px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        /* Блок с быстрым расчетом (Авто/Бус/Пешком) */
+        #quick-stats {
+            margin-top: 20px;
+            display: none;
+            gap: 15px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .stat-box {
+            flex: 1;
+            min-width: 150px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            text-align: center;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .stat-icon { font-size: 1.5rem; display: block; margin-bottom: 5px; }
+        .stat-title { font-weight: bold; color: var(--primary-dark); font-size: 0.9rem; }
+        .stat-val { color: #555; font-size: 0.9rem; }
+
+        /* Кнопка открытия инструкции */
+        #btn-open-instructions {
+            display: none;
+            margin-top: 20px;
+            background: #fff;
+            color: var(--primary-dark);
+            border: 2px solid var(--primary-dark);
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        #btn-open-instructions:hover {
+            background: var(--primary-dark);
+            color: white;
+        }
+
+        /* --- Всплывающее окно (Модальное) --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(3px);
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            border-radius: 15px;
+            padding: 25px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+
+        .modal-body {
+            overflow-y: auto;
+            flex-grow: 1;
+            padding-right: 10px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+        .close-btn:hover { color: #333; }
+
+        /* Стили списка инструкций */
+        .instruction-step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            color: #444;
+            border-bottom: 1px dashed #eee;
+            padding-bottom: 10px;
+        }
+        .step-icon {
+            margin-right: 15px;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            min-width: 25px;
+        }
+        .step-dist {
+            font-size: 0.8rem;
+            color: #888;
+            margin-left: auto;
+            padding-left: 10px;
+            white-space: nowrap;
+        }
+
+        /* --- Контакты --- */
+        .contact-box {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        footer {
+            background: var(--primary-dark);
+            color: #eee;
+            text-align: center;
+            padding: 20px;
+            margin-top: 50px;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            #home h1 { font-size: 2.2rem; }
+            #quick-stats { display: block; }
+            .stat-box { margin-bottom: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="instructionModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="margin:0; color: var(--primary-dark);">🗺️ Детали маршрута</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalTextContent">
+                </div>
+            <div style="margin-top:15px; text-align:center;">
+                <button onclick="closeModal()" style="padding:10px 30px; background:var(--primary-color); color:white; border:none; border-radius:5px; cursor:pointer;">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <header>
+        <nav>
+            <div class="logo">ASTANA GUIDE</div>
+            <ul class="nav-links">
+                <li><a href="#home">Главная</a></li>
+                <li><a href="#about">О нас</a></li>
+                <li><a href="#parks">Локации</a></li>
+                <li><a href="#map-section">Карта</a></li>
+                <li><a href="#contacts">Контакты</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section id="home">
+        <h1>Открой для себя<br><span>Астану</span></h1>
+        <p>
+            Добро пожаловать в цифровую экосистему туристических маршрутов столицы. 
+            Астана — это город контрастов, где бескрайняя степь встречается с футуристической архитектурой. 
+            Наш путеводитель поможет вам построить оптимальный и интересный маршрут от центрального монумента «Байтерек» 
+            до самых живописных парков, музеев и культурных объектов города. Планируйте свое время и исследуйте город эффективно!
+        </p>
+        <a href="#map-section" class="btn-start">ПОСТРОИТЬ МАРШРУТ</a>
+    </section>
+
+    <section id="about">
+        <h2 class="section-title">О Проекте</h2>
+        <div class="about-grid">
+            <div class="about-card">
+                <h3>🎯 Цель проекта</h3>
+                <p>Разработка интерактивной веб-карты для популяризации внутреннего туризма и создания удобного инструмента навигации для студентов и гостей столицы, желающих посетить ключевые рекреационные зоны.</p>
+            </div>
+            <div class="about-card">
+                <h3>📝 Описание</h3>
+                <p>Данный ресурс представляет собой одностраничное веб-приложение (SPA) на базе библиотеки Leaflet. Оно объединяет 9 ключевых достопримечательностей Астаны, расчет времени пути для разных видов транспорта и детальную навигацию.</p>
+            </div>
+            <div class="about-card">
+                <h3>🚀 Задачи</h3>
+                <ul>
+                    <li>Сбор геоданных о парках и культурных объектах.</li>
+                    <li>Расчет альтернативных маршрутов (пешком, авто, автобус).</li>
+                    <li>Реализация функции пошаговой навигации.</li>
+                    <li>Визуализация данных в удобном UX/UI дизайне.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section id="parks">
+        <h2 class="section-title">Топ-9 Локаций Столицы</h2>
+        <div class="parks-grid">
+            <div class="park-card">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4bvYjC7IT-qWG1kCSbb3VoGWc5ujp--Z50w&s" alt="Ботанический Сад">
+                <div class="park-info">
+                    <h3>1. Ботанический Сад</h3>
+                    <p>Оазис в центре левого берега. Оранжереи и километры беговых дорожек.</p>
+                    <button class="btn-route" onclick="buildRouteTo(0)">Маршрут</button>
+                </div>
+            </div>
+            <div class="park-card">
+                <img src="https://inbusiness.kz/uploads/2025-4/aEPgf6HN.webp" alt="Столичный Парк">
+                <div class="park-info">
+                    <h3>2. Столичный Парк</h3>
+                    <p>Исторический парк на набережной Ишима. Аттракционы и пляж.</p>
+                    <button class="btn-route" onclick="buildRouteTo(1)">Маршрут</button>
+                </div>
+            </div>
+            <div class="park-card">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDaclQpZJABWhxzmxv-DsJH_VsHx21Gbi5kg&s" alt="Президентский Парк">
+                <div class="park-info">
+                    <h3>3. Президентский Парк</h3>
+                    <p>Ландшафтный парк вокруг Пирамиды. Панорамные виды и фонтаны.</p>
+                    <button class="btn-route" onclick="buildRouteTo(2)">Маршрут</button>
+                </div>
+            </div>
+            <div class="park-card">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRXz8h5HEUgIhG_B_jM-PiDaj6UuwtSCgIBZw&s" alt="Триатлон Парк">
+                <div class="park-info">
+                    <h3>4. Триатлон Парк</h3>
+                    <p>Спортивное сердце столицы. Трассы в форме логотипа Ironman.</p>
+                    <button class="btn-route" onclick="buildRouteTo(3)">Маршрут</button>
+                </div>
+            </div>
+            <div class="park-card">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTDRZ5Nh9fUpzATgksxmAklvJMjl8b1AvzXeQ&s" alt="Парк Жетысу">
+                <div class="park-info">
+                    <h3>5. Парк Жетысу</h3>
+                    <p>Миниатюра природы Семиречья: горы, каньон Чарын и река Или.</p>
+                    <button class="btn-route" onclick="buildRouteTo(4)">Маршрут</button>
+                </div>
+            </div>
+            <div class="park-card">
+                <img src="https://optio.travel/resources/it0fb0296ab8e8480a94feaca0fd7ca5d1/ce01ee1403ab42bda9ced5374199bdf8.jpg" alt="EXPO">
+                <div class="park-info">
+                    <h3>6. Нур Алем (EXPO)</h3>
+                    <p>Музей энергии будущего. Самое большое сферическое здание в мире.</p>
+                    <button class="btn-route" onclick="buildRouteTo(5)">Маршрут</button>
+                </div>
+            </div>
+            <div class="park-card">
+                <img src="https://visitnursultan.kz/upload/iblock/996/lah4drxxshkr6jfno2l58epvc53haguw.jpg" alt="Хазрет Султан">
+                <div class="park-info">
+                    <h3>7. Мечеть Хазрет Султан</h3>
+                    <p>Жемчужина архитектуры. Одна из крупнейших мечетей Центральной Азии.</p>
+                    <button class="btn-route" onclick="buildRouteTo(6)">Маршрут</button>
+                </div>
+            </div>
+            <div class="park-card">
+                <img src="https://astana.citypass.kz/wp-content/uploads/1be03bbed5957a58849daeb4b3497016.jpg" alt="Мост Атырау">
+                <div class="park-info">
+                    <h3>8. Мост Атырау</h3>
+                    <p>Пешеходный мост «Рыба». Самое инстаграмное место для прогулок.</p>
+                    <button class="btn-route" onclick="buildRouteTo(7)">Маршрут</button>
+                </div>
+            </div>
+            <div class="park-card">
+                <img src="https://ticketon.kz/media/upload/4090u30705_2natcionalnyi-muzei-rk.jpg" alt="Нац Музей">
+                <div class="park-info">
+                    <h3>9. Национальный Музей</h3>
+                    <p>Главное хранилище истории Казахстана. Расположен на площади Независимости.</p>
+                    <button class="btn-route" onclick="buildRouteTo(8)">Маршрут</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="map-section">
+        <div class="map-wrapper-width">
+            <h2 class="section-title">Навигация</h2>
+            
+            <div class="map-controls">
+                <label for="destination-select" style="font-weight: 600; font-size: 1.2rem; color: var(--primary-dark);">
+                    📍 Старт: <strong>Монумент «Байтерек»</strong>
+                </label>
+                <br>
+                <select id="destination-select" onchange="buildRouteTo(this.value)">
+                    <option value="" disabled selected>-- Выберите точку назначения --</option>
+                    <option value="0">1. Ботанический Сад</option>
+                    <option value="1">2. Столичный Парк</option>
+                    <option value="2">3. Президентский Парк</option>
+                    <option value="3">4. Триатлон Парк</option>
+                    <option value="4">5. Парк Жетысу</option>
+                    <option value="5">6. ЭКСПО (Нур Алем)</option>
+                    <option value="6">7. Мечеть Хазрет Султан</option>
+                    <option value="7">8. Мост Атырау</option>
+                    <option value="8">9. Национальный Музей</option>
+                </select>
+
+                <div id="quick-stats" style="display:none;">
+                    <div class="stat-box">
+                        <span class="stat-icon">🚗</span>
+                        <div class="stat-title">На машине</div>
+                        <div class="stat-val" id="val-car">--</div>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-icon">🚌</span>
+                        <div class="stat-title">Автобус</div>
+                        <div class="stat-val" id="val-bus">--</div>
+                        <div style="font-size:0.7rem; color:#999;">(с остановками)</div>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-icon">🚶</span>
+                        <div class="stat-title">Пешком</div>
+                        <div class="stat-val" id="val-walk">--</div>
+                    </div>
+                </div>
+
+                <button id="btn-open-instructions" onclick="openModal()">📜 Открыть пошаговый маршрут</button>
+            </div>
+
+            <div id="map-container">
+                <div id="map"></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contacts">
+        <h2 class="section-title">Контакты</h2>
+        <div class="contact-box">
+            <p><strong>Студент:</strong> Карим Нұрсұлтан</p>
+            <p><strong>Группа:</strong> ГиК 22-1</p>
+            <p><strong>ВУЗ:</strong> КазГАСА</p>
+            <p><strong>Тема курсовой:</strong> «Геоинформационный анализ туристических маршрутов столицы»</p>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 ASTANA GUIDE. All rights reserved.</p>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+
+    <script>
+        // --- ДАННЫЕ ---
+        const startPoint = { lat: 51.1283, lng: 71.4305, title: "Монумент Байтерек" };
+
+        const parksData = [
+            { id: 0, name: "Ботанический Сад", lat: 51.1132, lng: 71.4172 },
+            { id: 1, name: "Столичный Парк", lat: 51.1578, lng: 71.4289 },
+            { id: 2, name: "Президентский Парк", lat: 51.1245, lng: 71.4580 },
+            { id: 3, name: "Триатлон Парк", lat: 51.1472, lng: 71.4605 },
+            { id: 4, name: "Парк Жетысу", lat: 51.1444, lng: 71.4468 },
+            { id: 5, name: "ЭКСПО (Нур Алем)", lat: 51.0883, lng: 71.4132 },
+            { id: 6, name: "Мечеть Хазрет Султан", lat: 51.1257, lng: 71.4722 },
+            { id: 7, name: "Мост Атырау", lat: 51.1570, lng: 71.4320 },
+            { id: 8, name: "Национальный Музей", lat: 51.1213, lng: 71.4678 }
+        ];
+
+        // --- КАРТА ---
+        var map = L.map('map').setView([51.1283, 71.4305], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+
+        var startIcon = new L.Icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+        });
+
+        var parkIcon = new L.Icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+        });
+
+        L.marker([startPoint.lat, startPoint.lng], {icon: startIcon}).addTo(map).bindPopup("<b>Байтерек</b><br>Старт");
+
+        parksData.forEach(p => {
+            L.marker([p.lat, p.lng], {icon: parkIcon}).addTo(map)
+                .bindPopup(`<b>${p.name}</b><br><button onclick="buildRouteTo(${p.id})">Маршрут</button>`);
+        });
+
+        // --- ЛОГИКА ---
+        var routingControl = null;
+        var currentInstructions = []; // Хранилище для текста
+
+        function buildRouteTo(id) {
+            document.getElementById('destination-select').value = id;
+            var dest = parksData.find(x => x.id == id);
+            
+            // Скролл
+            document.getElementById('map-section').scrollIntoView({ behavior: 'smooth' });
+
+            if (routingControl) map.removeControl(routingControl);
+
+            routingControl = L.Routing.control({
+                waypoints: [L.latLng(startPoint.lat, startPoint.lng), L.latLng(dest.lat, dest.lng)],
+                routeWhileDragging: false,
+                language: 'ru',
+                lineOptions: { styles: [{color: '#006064', opacity: 0.8, weight: 6}] },
+                show: false // Скрываем стандартный блок текста на карте
+            }).on('routesfound', function(e) {
+                var routes = e.routes;
+                var summary = routes[0].summary;
+                
+                // 1. Обновляем плашки с временем (Расчет)
+                var distanceKm = (summary.totalDistance / 1000).toFixed(1);
+                var driveTimeMin = Math.round(summary.totalTime / 60);
+                
+                // Примерные формулы: Автобус чуть медленнее авто, Пешком ~5км/ч
+                var busTimeMin = Math.round(driveTimeMin * 1.6 + 10); 
+                var walkTimeMin = Math.round((distanceKm / 5) * 60);
+                var walkTimeStr = (walkTimeMin > 60) ? (Math.floor(walkTimeMin/60) + " ч " + (walkTimeMin%60) + " мин") : walkTimeMin + " мин";
+
+                document.getElementById('val-car').innerHTML = `<strong>${driveTimeMin} мин</strong><br><small>${distanceKm} км</small>`;
+                document.getElementById('val-bus').innerHTML = `<strong>~${busTimeMin} мин</strong>`;
+                document.getElementById('val-walk').innerHTML = `<strong>${walkTimeStr}</strong>`;
+                
+                document.getElementById('quick-stats').style.display = 'flex';
+                document.getElementById('btn-open-instructions').style.display = 'inline-block';
+
+                // 2. Сохраняем инструкции для модального окна
+                currentInstructions = e.routes[0].instructions;
+
+            }).addTo(map);
+        }
+
+        // --- МОДАЛЬНОЕ ОКНО ---
+        function openModal() {
+            if (!currentInstructions || currentInstructions.length === 0) return;
+
+            var container = document.getElementById('modalTextContent');
+            container.innerHTML = ""; // Очистка
+
+            // Формируем красивый список
+            currentInstructions.forEach(instr => {
+                // Иконка направления
+                let icon = "⬆️";
+                if (instr.type === 'TurnRight') icon = "➡️";
+                if (instr.type === 'TurnLeft') icon = "⬅️";
+                if (instr.type === 'DestinationReached') icon = "🏁";
+                if (instr.type === 'Roundabout') icon = "🔄";
+
+                // Дистанция (если 0, то не пишем)
+                let distText = instr.distance > 0 ? (instr.distance < 1000 ? instr.distance + " м" : (instr.distance/1000).toFixed(1) + " км") : "";
+
+                // HTML элемент
+                let div = document.createElement('div');
+                div.className = 'instruction-step';
+                div.innerHTML = `
+                    <div class="step-icon">${icon}</div>
+                    <div>${instr.text}</div>
+                    <div class="step-dist">${distText}</div>
+                `;
+                container.appendChild(div);
+            });
+
+            document.getElementById('instructionModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('instructionModal').style.display = 'none';
+        }
+
+        // Закрыть по клику вне окна
+        window.onclick = function(event) {
+            var modal = document.getElementById('instructionModal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>
